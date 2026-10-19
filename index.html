@@ -1,1 +1,52 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FastProxy by Tai</title><link rel="stylesheet" href="./styles.css"><style>.workspace{margin:24px 0;background:#090909;border:1px solid #333;border-radius:18px;padding:16px}.workspace iframe{width:100%;height:55vh;border:0;background:#fff;border-radius:12px}.workspace .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.workspace input{flex:1;min-width:200px}.account{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.account input{min-width:170px}.notice{color:#aaa;font-size:13px}button{cursor:pointer}</style></head><body><div class="wrap"><header><a class="brand" href="./">FastProxy by Tai</a><span class="sub">OLED · CONNECTED</span></header><main><section class="hero"><h1>Browse in one place.</h1><p>Account-based bookmarks and a built-in viewing panel.</p><div class="account"><input id="email" type="email" placeholder="Email" autocomplete="email"><input id="password" type="password" placeholder="Password" autocomplete="current-password"><button id="signup">Sign up</button><button id="signin">Sign in</button><button id="signout">Sign out</button></div><p id="auth-status" class="notice" role="status"></p></section><section class="workspace"><div class="toolbar"><input id="address" placeholder="Enter URL or search"><button id="go">Go</button><button id="bookmark">Save bookmark</button></div><iframe id="viewer" title="Embedded website" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-popups-to-escape-sandbox"></iframe><p class="notice">Some websites prohibit embedding and will not display here. FastProxy does not bypass website restrictions or proxy traffic.</p></section><section><h2>Saved bookmarks</h2><div id="bookmarks" class="shortcuts"></div><p id="save-status" class="notice"></p></section></main></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050505"><meta name="description" content="FastProxy by Tai: secure cloud bookmarks and integrated browsing"><title>FastProxy · By Tai</title>
+<link rel="stylesheet" href="./styles.css"></head>
+<body>
+<div class="shell">
+  <header class="topbar"><div class="brand"><div class="brandmark">F<span>.</span></div><div><strong>fastproxy</strong><small>by tai / beta 3</small></div></div>
+  <div class="topright"><span class="pill" id="tier-badge">FREE</span><span class="user-label" id="current-user">Guest</span><button id="account-toggle" class="subtle">Account</button></div></header>
+  <div class="layout"><aside class="sidebar">
+    <div class="sidebar-label">WORKSPACE</div>
+    <button class="nav active" data-panel="browser">◫ <span>Browser</span></button>
+    <button class="nav" data-panel="bookmarks">☆ <span>Bookmarks</span></button>
+    <button class="nav" data-panel="history">◷ <span>History</span></button>
+    <div class="sidebar-label second">ACCOUNT</div>
+    <button class="nav" data-panel="settings">⚙ <span>Preferences</span></button>
+    <button class="nav" data-panel="plans">◇ <span>Membership</span></button>
+    <button class="nav" data-panel="owner">▣ <span>Owner console</span></button>
+    <div class="sidebar-bottom"><span class="online"></span><span>Supabase connected</span><small>Public preview / limited sites</small></div>
+  </aside>
+  <main class="main">
+    <section id="panel-browser" class="panel active">
+      <div class="headline"><div><span class="eyebrow">BROWSER WORKSPACE</span><h1>Explore, all in one place.</h1><p>Navigate without opening another tab. Use Reader for supported public documentation pages.</p></div><span class="beta">BETA / v3</span></div>
+      <div class="browser">
+        <div class="tabbar"><div id="tabs" class="tabs"></div><button id="new-tab" class="tab-add" title="New internal tab" aria-label="New tab">+</button></div>
+        <div class="browser-toolbar">
+          <div class="toolbar-actions"><button id="back" title="Back" aria-label="Back">←</button><button id="forward" title="Forward" aria-label="Forward">→</button><button id="reload" title="Reload" aria-label="Reload">↻</button><button id="home" title="Home" aria-label="Home">⌂</button></div>
+          <form id="navigate" class="omnibox"><span class="lock-icon">◎</span><input id="address" placeholder="Enter URL or search..." aria-label="Website address" autocomplete="off" spellcheck="false"><button type="submit" aria-label="Navigate">Go</button></form>
+          <button id="save-bookmark" title="Bookmark" aria-label="Save bookmark" class="bookmark-btn">☆</button>
+          <select id="viewer-mode" aria-label="Viewing mode"><option value="direct">Website</option><option value="reader">Reader</option></select>
+        </div>
+        <div id="viewer-empty" class="empty-view"><div class="empty-mark">F.</div><h2>Your window to the web.</h2><p>Enter a public website address or select a quick start.</p><div class="quicklinks"><button data-go="https://en.wikipedia.org/wiki/Main_Page">Wikipedia</button><button data-go="https://developer.mozilla.org/en-US/">MDN Web Docs</button><button data-go="https://docs.python.org/3/">Python Docs</button></div></div>
+        <iframe id="viewer" title="Website viewer" hidden referrerpolicy="no-referrer" loading="eager"></iframe>
+        <div class="browser-footer"><span id="page-status" role="status">Ready</span><span>Some sites block embedding. Reader supports approved public sites, not logins or interactive apps.</span></div>
+      </div>
+    </section>
+    <section id="panel-bookmarks" class="panel"><div class="section-head"><div><span class="eyebrow">YOUR LIBRARY</span><h1>Bookmarks</h1><p>Cloud bookmarks saved privately to your account.</p></div></div><div id="bookmark-list" class="entry-list"></div></section>
+    <section id="panel-history" class="panel"><div class="section-head"><div><span class="eyebrow">ACTIVITY</span><h1>History</h1><p>Recently opened addresses, visible only to your account.</p></div><button id="clear-history" class="outline">Clear history</button></div><div id="history-list" class="entry-list"></div></section>
+    <section id="panel-settings" class="panel"><span class="eyebrow">CUSTOMIZE</span><h1>Preferences</h1><p>Sync browsing preferences across signed-in sessions.</p>
+      <div class="setting-card"><label for="homepage">Homepage</label><input id="homepage" placeholder="https://example.com"><label for="search-engine">Search engine</label><select id="search-engine"><option value="duckduckgo">DuckDuckGo</option><option value="brave">Brave Search</option></select><label for="default-view">Default view</label><select id="default-view"><option value="direct">Website (embedded)</option><option value="reader">Reader (supported sites)</option></select><button id="save-settings">Save preferences</button><p id="settings-message" class="muted" role="status"></p></div></section>
+    <section id="panel-plans" class="panel"><span class="eyebrow">MEMBERSHIP</span><h1>Find your plan.</h1><p>Stripe integration supports sandbox checkout when configured. No live payments are enabled.</p>
+      <div class="plan-grid"><article class="plan-card"><span class="eyebrow">STARTER</span><h2>Free</h2><p>Built-in browsing, bookmarks, preferences and history.</p><div class="price">Free</div><button class="outline" disabled>Included</button></article>
+      <article class="plan-card"><span class="eyebrow">SANDBOX PLAN</span><h2>Plus</h2><p>Subscription integration test tier. Real pricing and benefits not yet published.</p><div class="price">Test only</div><button data-subscribe="plus">Test Plus checkout</button></article>
+      <article class="plan-card"><span class="eyebrow">SANDBOX PLAN</span><h2>Pro</h2><p>Subscription integration test tier. Real pricing and benefits not yet published.</p><div class="price">Test only</div><button data-subscribe="pro">Test Pro checkout</button></article></div>
+      <button id="manage-billing" class="outline">Manage test subscription</button><p id="billing-message" role="status" class="muted"></p></section>
+    <section id="panel-owner" class="panel"><span class="eyebrow">RESTRICTED</span><h1>Owner console.</h1><p>Requires a verified owner role. Codes in public JavaScript do not grant access.</p><button id="load-owner">Verify owner access</button><p id="owner-message" class="muted" role="status"></p><div id="owner-members" class="entry-list"></div></section>
+  </main></div>
+</div>
+<dialog id="auth-dialog"><form method="dialog"><button class="dialog-x" aria-label="Close">×</button></form><div class="dialog-logo">F.</div><h2>FastProxy account</h2><p>Sign in or register to sync your saved data.</p>
+<label for="email">Email address</label><input type="email" id="email" autocomplete="email" placeholder="you@example.com">
+<label for="password">Password</label><input type="password" id="password" autocomplete="current-password" minlength="6" placeholder="Password">
+<div class="auth-actions"><button id="signin">Sign in</button><button id="signup" class="outline">Create account</button></div><button id="reset-password" class="textbutton">Send password reset email</button><button id="signout" class="textbutton">Sign out</button><p id="auth-message" role="status" class="muted"></p></dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="./app.js" defer></script></body></html>
